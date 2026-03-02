@@ -5,8 +5,8 @@
 // SETUP: Replace SUPABASE_URL and SUPABASE_ANON_KEY with your values.
 //        Find them at: Supabase Dashboard -> Settings -> API Keys
 //
-var SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co';
-var SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
+var SUPABASE_URL = 'https://kzjzmakstojywzzwzjhx.supabase.co';
+var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6anptYWtzdG9qeXd6end6amh4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI0Nzg0OTksImV4cCI6MjA4ODA1NDQ5OX0.sHCiDO2kC4n0fRNOJGREDoHa0h7TPXhPlWqp9ClDmW4';
 
 // Initialize Supabase client with session persistence
 var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
