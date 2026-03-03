@@ -5,8 +5,8 @@
 // SETUP: Replace SUPABASE_URL and SUPABASE_ANON_KEY with your values.
 //        Find them at: Supabase Dashboard -> Settings -> API Keys
 //
-var SUPABASE_URL = 'https://kzjzmakstojywzzwzjhx.supabase.co';
-var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6anptYWtzdG9qeXd6end6amh4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI0Nzg0OTksImV4cCI6MjA4ODA1NDQ5OX0.sHCiDO2kC4n0fRNOJGREDoHa0h7TPXhPlWqp9ClDmW4';
+var SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co';
+var SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
 
 // Initialize Supabase client with session persistence
 var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -154,6 +154,7 @@ var SupaDB = {
   },
   addItem: function(item) {
     var data = { item_number: item.itemNumber, name: item.name, category: item.category, location: item.location,
+      supplier: item.supplier || '',
       quantity: parseFloat(item.quantity) || 0, quantity_unit: item.quantityUnit, price: parseFloat(item.price) || 0,
       price_unit: item.priceUnit, total_value: (parseFloat(item.quantity) || 0) * (parseFloat(item.price) || 0),
       last_counted: new Date().toISOString().split('T')[0] };
@@ -163,6 +164,7 @@ var SupaDB = {
   updateItem: function(item) {
     var qty = parseFloat(item.quantity) || 0; var price = parseFloat(item.price) || 0;
     var data = { item_number: item.itemNumber, name: item.name, category: item.category, location: item.location,
+      supplier: item.supplier || '',
       quantity: qty, quantity_unit: item.quantityUnit, price: price, price_unit: item.priceUnit, total_value: Math.round(qty * price * 100) / 100 };
     return supabaseWrite({ type: 'update', table: 'items', data: data, matchField: 'id', matchValue: item.id },
       function() { return supabase.from('items').update(data).eq('id', item.id); });
@@ -197,6 +199,7 @@ var SupaDB = {
 
 function dbToItem(row) {
   return { id: row.id, category: row.category, itemNumber: row.item_number, name: row.name, location: row.location,
+    supplier: row.supplier || '',
     quantity: row.quantity, quantityUnit: row.quantity_unit, price: row.price, priceUnit: row.price_unit,
     totalValue: row.total_value, lastCounted: row.last_counted };
 }
