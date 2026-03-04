@@ -896,7 +896,7 @@ function MainApp(props) {
     var now = new Date().toISOString().split('T')[0];
 
     // Optimistic local update
-    setItems(function(prev){return prev.map(function(i){return Object.assign({},i,{lastCounted:now});});});
+    setItems(function(prev){return prev.map(function(i){return Object.assign({},i,{quantity:0,totalValue:0,lastCounted:now});});});
 
     if (SUPABASE_CONFIGURED) {
       SupaDB.closeInventory().then(function(result) {
