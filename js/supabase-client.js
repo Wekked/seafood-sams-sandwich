@@ -178,6 +178,15 @@ var SupaDB = {
     return supabaseWrite({ type: 'update_neq', table: 'items', data: { last_counted: now, quantity: 0 }, matchField: 'id', matchValue: 0 },
       function() { return supabase.from('items').update({ last_counted: now, quantity: 0 }).neq('id', 0); });
   },
+
+  saveSnapshot: function(snapshot) {
+    return supabaseWrite({ type: 'insert', table: 'inventory_snapshots', data: snapshot },
+      function() { return supabase.from('inventory_snapshots').insert(snapshot); });
+  },
+
+  loadSnapshots: function() {
+    return supabase.from('inventory_snapshots').select('*').order('closed_date', { ascending: false }).limit(12);
+  },
   loadCustomOrders: function() { return supabase.from('location_sort_orders').select('*'); },
   saveCustomOrder: function(location, itemIds) {
     return supabaseWrite({ type: 'upsert', table: 'location_sort_orders', data: { location_name: location, item_order: itemIds }, options: { onConflict: 'location_name' } },
