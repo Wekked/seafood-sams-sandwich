@@ -209,6 +209,8 @@ const PlusIcon = () => e('svg', {width:14,height:14,viewBox:'0 0 24 24',fill:'no
 const EditIcon = () => e('svg', {width:14,height:14,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2}, e('path',{d:'M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7'}), e('path',{d:'M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z'}));
 const TrashIcon = () => e('svg', {width:14,height:14,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2}, e('polyline',{points:'3 6 5 6 21 6'}), e('path',{d:'M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2'}));
 const DragIcon = () => e('svg', {width:16,height:16,viewBox:'0 0 24 24',fill:'currentColor'}, e('circle',{cx:9,cy:5,r:1.5}), e('circle',{cx:15,cy:5,r:1.5}), e('circle',{cx:9,cy:12,r:1.5}), e('circle',{cx:15,cy:12,r:1.5}), e('circle',{cx:9,cy:19,r:1.5}), e('circle',{cx:15,cy:19,r:1.5}));
+const MoveUpIcon = () => e('svg', {width:18,height:18,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2.5}, e('polyline',{points:'18 15 12 9 6 15'}));
+const MoveDownIcon = () => e('svg', {width:18,height:18,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2.5}, e('polyline',{points:'6 9 12 15 18 9'}));
 const ReorderIcon = () => e('svg', {width:14,height:14,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2}, e('line',{x1:4,y1:6,x2:20,y2:6}), e('line',{x1:4,y1:12,x2:20,y2:12}), e('line',{x1:4,y1:18,x2:20,y2:18}), e('polyline',{points:'1 4 4 1 7 4'}), e('polyline',{points:'1 20 4 23 7 20'}));
 const CheckCircleIcon = () => e('svg', {width:14,height:14,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2}, e('path',{d:'M22 11.08V12a10 10 0 1 1-5.93-9.14'}), e('polyline',{points:'22 4 12 14.01 9 11.01'}));
 const InfoIcon = () => e('svg', {width:16,height:16,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:2}, e('circle',{cx:12,cy:12,r:10}), e('line',{x1:12,y1:16,x2:12,y2:12}), e('line',{x1:12,y1:8,x2:12.01,y2:8}));
@@ -1113,23 +1115,15 @@ function MainApp(props) {
 
                   var rowProps = {key:item.id, className: dragClass.trim()};
                   if (reorderMode) {
-                    rowProps.draggable = true;
-                    rowProps.onDragStart = function(ev) { handleDragStart(item.id, ev); };
-                    rowProps.onDragOver = function(ev) { handleDragOver(item.id, ev); };
-                    rowProps.onDragLeave = function(ev) { handleDragLeave(item.id, ev); };
-                    rowProps.onDrop = function(ev) { handleDrop(item.id, ev); };
-                    rowProps.onDragEnd = handleDragEnd;
+                    rowProps.draggable = false;
                   }
 
                   return e('tr', rowProps,
-                    reorderMode && e('td', {style:{textAlign:'center', padding:'12px 6px'}},
-                      e('div', {style:{display:'flex', alignItems:'center', gap:4, justifyContent:'center'}},
-                        e('span', {className:'row-number'}, rowIndex + 1),
-                        e('div', {className:'drag-handle'}, e(DragIcon)),
-                        e('div', {className:'reorder-touch-btns'},
-                          e('button', {className:'reorder-touch-btn', title:'Move up', onClick:function(){moveItem(item.id,'up');}, disabled:rowIndex===0}, '\u25B2'),
-                          e('button', {className:'reorder-touch-btn', title:'Move down', onClick:function(){moveItem(item.id,'down');}, disabled:rowIndex===filtered.length-1}, '\u25BC')
-                        )
+                    reorderMode && e('td', {style:{textAlign:'center', padding:'6px'}},
+                      e('div', {style:{display:'flex', alignItems:'center', gap:6, justifyContent:'center'}},
+                        e('input', {type:'number', className:'row-number-input', value:rowIndex + 1, min:1, max:pageItems.length, style:{width:44,padding:'3px 4px',border:'1.5px solid #CBD5E1',borderRadius:6,fontSize:13,fontWeight:700,textAlign:'center',fontFamily:'inherit',color:'var(--ocean-deep)',background:'white'}, onFocus:function(ev){ev.target.select();}, onChange:function(ev){var newPos=parseInt(ev.target.value,10); if(isNaN(newPos)||newPos<1||newPos>pageItems.length)return; var currentIds=filtered.map(function(i){return i.id;}); var oldIdx=currentIds.indexOf(item.id); if(oldIdx===-1||oldIdx===newPos-1)return; currentIds.splice(oldIdx,1); currentIds.splice(newPos-1,0,item.id); setCustomOrders(function(prev){var updated=Object.assign({},prev); updated[locationFilter]=currentIds; return updated;}); if(SUPABASE_CONFIGURED){console.log('Saving order for',locationFilter,currentIds.length,'items');SupaDB.saveCustomOrder(locationFilter,currentIds).then(function(r){console.log('Save result:',r);});}}}),
+                        e('button', {style:{background:'none',border:'1px solid #CBD5E1',borderRadius:6,padding:'4px 6px',cursor:'pointer',display:'flex',alignItems:'center',opacity:rowIndex===0?0.3:1}, disabled:rowIndex===0, onClick:function(){moveItem(item.id,'up');}}, e(MoveUpIcon)),
+                        e('button', {style:{background:'none',border:'1px solid #CBD5E1',borderRadius:6,padding:'4px 6px',cursor:'pointer',display:'flex',alignItems:'center',opacity:rowIndex===pageItems.length-1?0.3:1}, disabled:rowIndex===pageItems.length-1, onClick:function(){moveItem(item.id,'down');}}, e(MoveDownIcon)),
                       )
                     ),
                     e('td', null,
@@ -1351,11 +1345,11 @@ function MainApp(props) {
       )),
       e('div', {className:'form-row'},
         fg('Quantity on Hand', e('input', {className:'form-input', type:'number', min:0, step:0.5, value:newItem.quantity, onChange:function(ev){setNewItem(function(n){return Object.assign({},n,{quantity:ev.target.value});});}})),
-        fg('Quantity Unit', e('select', {className:'form-input', value:newItem.quantityUnit, onChange:function(ev){setNewItem(function(n){return Object.assign({},n,{quantityUnit:ev.target.value});});}}, e('option',{value:'CS'},'CS (Case)'), e('option',{value:'PK'},'PK (Pack)'), e('option',{value:'LB'},'LB (Pound)')))
+        fg('Quantity Unit', e('select', {className:'form-input', value:newItem.quantityUnit, onChange:function(ev){setNewItem(function(n){return Object.assign({},n,{quantityUnit:ev.target.value});});}}, e('option',{value:'CS'},'CS (Case)'), e('option',{value:'EA'},'EA (Each)'), e('option',{value:'LB'},'LB (Pound)')))
       ),
       e('div', {className:'form-row'},
         fg('Price', e('input', {className:'form-input', type:'number', min:0, step:0.01, value:newItem.price, onChange:function(ev){setNewItem(function(n){return Object.assign({},n,{price:ev.target.value});});}})),
-        fg('Price Unit', e('select', {className:'form-input', value:newItem.priceUnit, onChange:function(ev){setNewItem(function(n){return Object.assign({},n,{priceUnit:ev.target.value});});}}, e('option',{value:'CS'},'CS (Case)'), e('option',{value:'PK'},'PK (Pack)'), e('option',{value:'LB'},'LB (Pound)')))
+        fg('Price Unit', e('select', {className:'form-input', value:newItem.priceUnit, onChange:function(ev){setNewItem(function(n){return Object.assign({},n,{priceUnit:ev.target.value});});}}, e('option',{value:'CS'},'CS (Case)'), e('option',{value:'EA'},'EA (Each)'), e('option',{value:'LB'},'LB (Pound)')))
       )
     ),
 
@@ -1377,11 +1371,11 @@ function MainApp(props) {
       )),
       e('div', {className:'form-row'},
         fg('Quantity on Hand', e('input', {className:'form-input', type:'number', min:0, step:0.5, value:editItem.quantity, onChange:function(ev){setEditItem(function(n){return Object.assign({},n,{quantity:ev.target.value});});}})),
-        fg('Unit', e('select', {className:'form-input', value:editItem.quantityUnit, onChange:function(ev){setEditItem(function(n){return Object.assign({},n,{quantityUnit:ev.target.value});});}}, e('option',{value:'CS'},'CS'), e('option',{value:'PK'},'PK'), e('option',{value:'LB'},'LB')))
+        fg('Unit', e('select', {className:'form-input', value:editItem.quantityUnit, onChange:function(ev){setEditItem(function(n){return Object.assign({},n,{quantityUnit:ev.target.value});});}}, e('option',{value:'CS'},'CS'), e('option',{value:'EA'},'EA'), e('option',{value:'LB'},'LB')))
       ),
       e('div', {className:'form-row'},
         fg('Price', e('input', {className:'form-input', type:'number', min:0, step:0.01, value:editItem.price, onChange:function(ev){setEditItem(function(n){return Object.assign({},n,{price:ev.target.value});});}})),
-        fg('Price Unit', e('select', {className:'form-input', value:editItem.priceUnit, onChange:function(ev){setEditItem(function(n){return Object.assign({},n,{priceUnit:ev.target.value});});}}, e('option',{value:'CS'},'CS'), e('option',{value:'PK'},'PK'), e('option',{value:'LB'},'LB')))
+        fg('Price Unit', e('select', {className:'form-input', value:editItem.priceUnit, onChange:function(ev){setEditItem(function(n){return Object.assign({},n,{priceUnit:ev.target.value});});}}, e('option',{value:'CS'},'CS'), e('option',{value:'EA'},'EA'), e('option',{value:'LB'},'LB')))
       )
     ),
 
