@@ -140,18 +140,24 @@ var SupaAuth = {
 
 var SupaDB = {
   loadItems: function() { return supabase.from('items').select('*').order('name', { ascending: true }); },
-  saveQuantityChanges: function(changes, items) {
+saveQuantityChanges: function(changes, items) {
     var now = localDate();
-    var updates = Object.keys(changes).map(function(idStr) {
+    var ids = Object.keys(changes);
+    var promises = ids.map(function(idStr) {
       var id = parseInt(idStr);
       var item = items.find(function(i) { return i.id === id; });
       var newQty = changes[idStr];
-      return { id: id, quantity: newQty, total_value: Math.round(newQty * (item ? item.price : 0) * 100) / 100, last_counted: now };
+      var newValue = Math.round(newQty * (item ? item.price : 0) * 100) / 100;
+      return supabase
+        .from('items')
+        .update({ quantity: newQty, total_value: newValue, last_counted: now })
+        .eq('id', id);
     });
-    return supabaseWrite(
-      { type: 'upsert', table: 'items', data: updates, options: { onConflict: 'id' } },
-      function() { return supabase.from('items').upsert(updates, { onConflict: 'id' }); }
-    );
+    return Promise.all(promises).then(function(results) {
+      var failed = results.find(function(r) { return r.error; });
+      if (failed) return { error: failed.error };
+      return { data: results, error: null };
+    });
   },
   addItem: function(item) {
     var data = { item_number: item.itemNumber, name: item.name, category: item.category, location: item.location,
@@ -174,10 +180,10 @@ var SupaDB = {
     return supabaseWrite({ type: 'delete', table: 'items', matchField: 'id', matchValue: id },
       function() { return supabase.from('items').delete().eq('id', id); });
   },
-  closeInventory: function() {
+closeInventory: function() {
     var now = localDate();
-    return supabaseWrite({ type: 'update_neq', table: 'items', data: { last_counted: now, quantity: 0 }, matchField: 'id', matchValue: 0 },
-      function() { return supabase.from('items').update({ last_counted: now, quantity: 0 }).neq('id', 0); });
+    return supabaseWrite({ type: 'update_neq', table: 'items', data: { last_counted: now }, matchField: 'id', matchValue: 0 },
+      function() { return supabase.from('items').update({ last_counted: now }).neq('id', 0); });
   },
 
   saveSnapshot: function(snapshot) {
