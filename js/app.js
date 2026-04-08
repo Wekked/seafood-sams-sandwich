@@ -949,7 +949,7 @@ function MainApp(props) {
     }
 
     // Optimistic local update
-    setItems(function(prev){return prev.map(function(i){return Object.assign({},i,{quantity:0,totalValue:0,lastCounted:now});});});
+    setItems(function(prev){return prev.map(function(i){return Object.assign({},i,{lastCounted:now});});});
   };
 
   var exportCSV = function() {
