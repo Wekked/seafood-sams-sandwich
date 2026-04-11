@@ -140,7 +140,8 @@ var SupaAuth = {
 
 var SupaDB = {
   loadItems: function() { return supabase.from('items').select('*').order('name', { ascending: true }); },
-saveQuantityChanges: function(changes, items) {
+
+  saveQuantityChanges: function(changes, items) {
     var now = localDate();
     var ids = Object.keys(changes);
     var promises = ids.map(function(idStr) {
@@ -159,6 +160,23 @@ saveQuantityChanges: function(changes, items) {
       return { data: results, error: null };
     });
   },
+
+saveOrderChanges: function(changes, items) {
+    var ids = Object.keys(changes);
+    var promises = ids.map(function(idStr) {
+      var id = parseInt(idStr);
+      return supabase
+        .from('items')
+        .update({ qty_to_order: changes[idStr] })
+        .eq('id', id);
+    });
+    return Promise.all(promises).then(function(results) {
+      var failed = results.find(function(r) { return r.error; });
+      if (failed) return { error: failed.error };
+      return { data: results, error: null };
+    });
+  },
+  
   addItem: function(item) {
     var data = { item_number: item.itemNumber, name: item.name, category: item.category, location: item.location,
       supplier: item.supplier || '',
