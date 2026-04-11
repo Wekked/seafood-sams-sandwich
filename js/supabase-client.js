@@ -177,23 +177,27 @@ saveOrderChanges: function(changes, items) {
     });
   },
   
-  addItem: function(item) {
+addItem: function(item) {
     var data = { item_number: item.itemNumber, name: item.name, category: item.category, location: item.location,
       supplier: item.supplier || '',
       quantity: parseFloat(item.quantity) || 0, quantity_unit: item.quantityUnit, price: parseFloat(item.price) || 0,
       price_unit: item.priceUnit, total_value: (parseFloat(item.quantity) || 0) * (parseFloat(item.price) || 0),
+      qty_to_order: parseFloat(item.qtyToOrder) || 0,
       last_counted: localDate() };
     return supabaseWrite({ type: 'insert', table: 'items', data: data },
       function() { return supabase.from('items').insert(data).select().single(); });
   },
-  updateItem: function(item) {
+  
+ updateItem: function(item) {
     var qty = parseFloat(item.quantity) || 0; var price = parseFloat(item.price) || 0;
     var data = { item_number: item.itemNumber, name: item.name, category: item.category, location: item.location,
       supplier: item.supplier || '',
-      quantity: qty, quantity_unit: item.quantityUnit, price: price, price_unit: item.priceUnit, total_value: Math.round(qty * price * 100) / 100 };
+      quantity: qty, quantity_unit: item.quantityUnit, price: price, price_unit: item.priceUnit, total_value: Math.round(qty * price * 100) / 100,
+      qty_to_order: parseFloat(item.qtyToOrder) || 0 };
     return supabaseWrite({ type: 'update', table: 'items', data: data, matchField: 'id', matchValue: item.id },
       function() { return supabase.from('items').update(data).eq('id', item.id); });
   },
+  
   deleteItem: function(id) {
     return supabaseWrite({ type: 'delete', table: 'items', matchField: 'id', matchValue: id },
       function() { return supabase.from('items').delete().eq('id', id); });
@@ -235,7 +239,7 @@ function dbToItem(row) {
   return { id: row.id, category: row.category, itemNumber: row.item_number, name: row.name, location: row.location,
     supplier: row.supplier || '',
     quantity: row.quantity, quantityUnit: row.quantity_unit, price: row.price, priceUnit: row.price_unit,
-    totalValue: row.total_value, lastCounted: row.last_counted };
+    totalValue: row.total_value, qtyToOrder: row.qty_to_order || 0, lastCounted: row.last_counted };
 }
 
 window.SupaAuth = SupaAuth;
