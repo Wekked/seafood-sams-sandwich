@@ -204,8 +204,8 @@ addItem: function(item) {
   },
 closeInventory: function() {
     var now = localDate();
-    return supabaseWrite({ type: 'update_neq', table: 'items', data: { last_counted: now }, matchField: 'id', matchValue: 0 },
-      function() { return supabase.from('items').update({ last_counted: now }).neq('id', 0); });
+    return supabaseWrite({ type: 'update_neq', table: 'items', data: { last_counted: now, qty_to_order: 0 }, matchField: 'id', matchValue: 0 },
+      function() { return supabase.from('items').update({ last_counted: now, qty_to_order: 0 }).neq('id', 0); });
   },
 
   saveSnapshot: function(snapshot) {
